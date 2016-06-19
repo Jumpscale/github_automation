@@ -1,0 +1,16 @@
+
+repo.name = type:'str' descr:'name of repo' @ASK
+
+repo.url = type:'str' descr:'url of github repo' default:''
+
+repo.account = parent:'github_account' @ASK
+
+repo.type =  type:'str' descr:'proj,code,ays,doc,user' @ASK
+
+code.path = type:'str' default:""
+
+github.client = type:'str' consume:'github_client:1' auto
+
+github.config= type:'str' consume:'github_config:1' auto
+
+repo.emails = type:'str' list

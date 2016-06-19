@@ -1,0 +1,4 @@
+recurring.recurring_process_issues_from_model = '15m'
+recurring.recurring_process_issues_from_github = '24h'
+events.generic =
+    event_new_issue,

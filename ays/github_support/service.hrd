@@ -1,0 +1,5 @@
+events.email =
+    from_email_ticket,
+
+events.generic =
+    'from_github_ticket',

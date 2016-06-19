@@ -1,0 +1,3 @@
+github.secret = type:'str' descr:'secret of your github, see https://github.com/settings/tokens' @ASK
+
+code.path = type:'str' default:"/opt/code"
