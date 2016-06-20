@@ -6,6 +6,8 @@ from jinja2 import Template
 from github.GithubObject import NotSet
 
 
+NOMILESTONE = '__no_milestone__'
+
 MILESTONE_REPORT_FILE = 'milestone-report.md'
 ASSIGNEE_REPORT_FILE = 'assignee-report.md'
 
@@ -115,6 +117,8 @@ re_story_estimate = re.compile('^ETA:\s*(.+)\s*$', re.MULTILINE)
 
 
 class Actions(ActionsBaseMgmt):
+    def __init__(self, *args, **kwargs):
+        self.logger = j.logger.get("github.repo")
 
     def input(self, service, name, role, instance, args={}):
 
@@ -180,7 +184,10 @@ class Actions(ActionsBaseMgmt):
                 return m.group(1), last['id']
         return None, None
 
-    def _process_stories(self, issues):
+    def _issue_url(self, issue):
+        return 'https://github.com/%s/issues/%s' % (issue.repo.fullname, issue.number)
+
+    def _process_stories(self, service, issues):
         #make sure all stories are auto labeled correctly
         stories = dict()
 
@@ -190,6 +197,8 @@ class Actions(ActionsBaseMgmt):
 
             story_name = self._story_name(issue.title)
             if story_name is not None:
+                if not issue.assignee:
+                    self._notify(service, "Story %s has no owner" % self._issue_url(issue))
                 stories[story_name] = issue
                 if issue.type != 'story':
                     issue.type = 'story'
@@ -198,7 +207,7 @@ class Actions(ActionsBaseMgmt):
 
     def _move_to_repo(self, issue, dest):
         self.logger.info("%s: move to repo:%s" % (issue, dest))
-        ref = 'https://github.com/%s/issues/%s' % (issue.repo.fullname, issue.number)
+        ref = self._issue_url(issue)
         body = "Issue moved from %s\n\n" % ref
 
         for line in issue.api.body.splitlines():
@@ -357,7 +366,31 @@ class Actions(ActionsBaseMgmt):
             self.logger.info("%s: link to story:%s" % (task, story))
             task.body = str(doc)
 
-    def _process_issues(self, repo, issues=None):
+    def _notify(self, service, message):
+        handle = service.parent.hrd.getStr('telegram.handle', '')
+        if not handle:
+            return
+
+        self.ask_telegram(handle, message, expect_response=False)
+
+    def _check_deadline(self, service, milestones, report):
+        for milestone_key, stories in report.items():
+            if milestone_key == NOMILESTONE:
+                continue
+            milestone = None
+            deadline = None
+
+            for story in stories:
+                if milestone is None:
+                    #note that milestones keys are in 'number:title' so we can only retrieve it via the issue reference.
+                    milestone = milestones[story.milestone]
+                    deadline = j.data.time.any2epoch(milestone.deadline)
+
+                dl, _ = self._story_deadline(story)
+                if dl > deadline:
+                    self._notify(service, "Story %s ETA is behind milestone deadline" % self._issue_url(story))
+
+    def _process_issues(self, service, repo, issues=None):
         """
         Process issues will find all the issues in the repo and label them accordin to the
         detected type (story, or task) add the proper linking of tasks to their parent stories, and
@@ -376,8 +409,7 @@ class Actions(ActionsBaseMgmt):
         if issues is None:
             issues = repo.issues
 
-        stories = self._process_stories(issues)
-
+        stories = self._process_stories(service, issues)
 
         issues = sorted(issues, key=lambda i: i.number)
 
@@ -404,7 +436,7 @@ class Actions(ActionsBaseMgmt):
                 continue
 
             if self._is_story(issue) and issue.isOpen:
-                key = '__no_milestone__'
+                key = NOMILESTONE
                 if issue.milestone:
                     ms = milestones.get(issue.milestone, None)
                     if ms is not None:
@@ -428,6 +460,7 @@ class Actions(ActionsBaseMgmt):
                 labels_dirty = True
 
             if self._task_estimate(issue.title) is None:
+                self._notify(service, "Issue: github.com/%s/issues/%s has no estimates" % (repo.fullname, issue.number))
                 if "task_no_estimation" not in labels:
                     labels.append("task_no_estimation")
                     labels_dirty = True
@@ -452,29 +485,32 @@ class Actions(ActionsBaseMgmt):
         for story, tasks in stories_tasks.items():
             self._story_add_tasks(story, tasks)
 
+        self._check_deadline(service, milestones, report)
+
         self._generate_views(repo, milestones, issues, report)
+
+    def _story_deadline(self, issue):
+        eta, id = self._story_estimate(issue)
+        try:
+            return j.data.time.getEpochFuture(eta), id
+        except:
+            pass
+        try:
+            return j.data.time.any2epoch(eta), id
+        except:
+            pass
+
+        return 0, id
 
     def _generate_views(self, repo, milestones, issues, report):
         # end for
         # process milestones
-        def _story_deadline(issue):
-            eta, id = self._story_estimate(issue)
-            try:
-                return j.data.time.getEpochFuture(eta), id
-            except:
-                pass
-            try:
-                return j.data.time.any2epoch(eta), id
-            except:
-                pass
-
-            return 0, id
 
         def summary(ms):
             issues = report.get(ms, [])
             ts = 0
             for issue in issues:
-                eta_stamp, _ = _story_deadline(issue)
+                eta_stamp, _ = self._story_deadline(issue)
                 if eta_stamp > ts:
                     ts = eta_stamp
 
@@ -492,7 +528,7 @@ class Actions(ActionsBaseMgmt):
                 return ':red_circle: Open'
 
         def estimate(issue):
-            eta, id = _story_deadline(issue)
+            eta, id = self._story_deadline(issue)
             if eta:
                 return j.data.time.epoch2HRDate(eta), id
             return None, None
@@ -601,7 +637,7 @@ class Actions(ActionsBaseMgmt):
             # load issues from ays.
             repo._issues = self.get_issues_from_ays(service=service)
 
-        self._process_issues(repo)
+        self._process_issues(service, repo)
 
         for issue in repo.issues:
             args = {'github.repo': service.instance}
