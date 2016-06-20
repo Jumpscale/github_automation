@@ -460,7 +460,7 @@ class Actions(ActionsBaseMgmt):
                 labels_dirty = True
 
             if self._task_estimate(issue.title) is None:
-                self._notify(service, "Issue: github.com/%s/issues/%s has no estimates" % (repo.fullname, issue.number))
+                self._notify(service, "Issue: %s has no estimates" % self._issue_url(issue))
                 if "task_no_estimation" not in labels:
                     labels.append("task_no_estimation")
                     labels_dirty = True
