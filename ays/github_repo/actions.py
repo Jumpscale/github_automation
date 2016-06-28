@@ -602,10 +602,11 @@ class Actions(ActionsBaseMgmt):
 
         return issues
 
-    def get_github_repo(self,service):
+    def get_github_repo(self,service, repokey=None):
         githubclientays=service.getProducers('github_client')[0]
         client = githubclientays.actions.getGithubClient(service=githubclientays)
-        repokey = service.hrd.get("repo.account") + "/" + service.hrd.get("repo.name")
+        if not repokey:
+            repokey = service.hrd.get("repo.account") + "/" + service.hrd.get("repo.name")
         return client.getRepo(repokey)
 
     @action()
@@ -690,3 +691,17 @@ class Actions(ActionsBaseMgmt):
         # create service gitub_issue
         args = {'github.repo': service.instance}
         service.aysrepo.new(name='github_issue', instance=str(issue.id), args=args, model=issue.ddict)
+        pattern = '(?P<story_card>\w+)(:)'
+        import re
+        match = re.search(pattern, issue.title)
+        if match:
+            if ("type_bug" in issue.labels or "type_feature" in issue.labels) and repo.type == 'code':
+                repo_name = service.hrd.get("repo.account") + "/" + service.hrd.get("org.repo")
+                org_repo = self.get_github_repo(service, repo_name)
+                org_issue = org_repo.api.create_issue(issue.title. issue.body)
+                if 'type_bug' in issue.labels:
+                    org_issue.add_to_labels("type_bug")
+                else:
+                    org_issue.add_to_labels("type_feature")
+                for comment in issue.comments:
+                    org_issue.create_comment(comment.body)
