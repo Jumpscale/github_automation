@@ -144,20 +144,6 @@ class Actions(ActionsBaseMgmt):
 
         path = j.sal.fs.joinPaths(clienthrd.get("code.path"), service.hrd.get("repo.account"), service.hrd.get("repo.name"))
         service.hrd.set("code.path", path)
-        cockpit_repo = j.atyourservice.get("ays_cockpit", "/opt/code/cockpit/ays_cockpit")
-        bp_service = cockpit_repo.getService("blueprint", "pilot")
-        cockpit_name = bp_service.hrd.get("cockpit.name")
-        os_cockpit_service = cockpit_repo.getService("os", cockpit_name)
-        dns_domain = os_cockpit_service.hrd.get("dns.domain")
-        webhook_url = "{dns_domain}/api/webhooks/github".format(dns_domain=dns_domain)
-        repo = self.get_github_repo(service)
-
-        for hook in repo.api.get_hooks():
-            if hook.config['url'] == webhook_url:
-                break
-        else:
-            config = {"url": webhook_url, "content_type": "json"}
-            repo.api.create_hook("web", config)
         return True
 
     def install(self, service):
@@ -420,7 +406,6 @@ class Actions(ActionsBaseMgmt):
         """
         if issues is None:
             issues = repo.issues
-
         stories = self._process_stories(service, issues)
 
         issues = sorted(issues, key=lambda i: i.number)
@@ -435,9 +420,7 @@ class Actions(ActionsBaseMgmt):
         _ms = [('{m.number}:{m.title}'.format(m=m), m) for m in repo.milestones]
         milestones = collections.OrderedDict(sorted(_ms, key=lambda i: i[1].title))
         report = dict()
-
         self._process_todos(repo, issues)
-
         if not org_repo:
             return
 
@@ -498,7 +481,6 @@ class Actions(ActionsBaseMgmt):
             self._story_add_tasks(story, tasks)
 
         self._check_deadline(service, milestones, report)
-
         self._generate_views(repo, milestones, issues, report)
 
     def _story_deadline(self, issue):
