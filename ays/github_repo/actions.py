@@ -410,26 +410,19 @@ class Actions(ActionsBaseMgmt):
 
         issues = sorted(issues, key=lambda i: i.number)
 
-        org_repo = False
-         # Logic after this point is only for home and org repo
-        for typ in ['org_', 'proj_']:
-            if not repo.name.lower().startswith(typ):
-                org_repo = True
-                break
+        org_repo = self._is_org_repo(repo.name)
 
         _ms = [('{m.number}:{m.title}'.format(m=m), m) for m in repo.milestones]
         milestones = collections.OrderedDict(sorted(_ms, key=lambda i: i[1].title))
         report = dict()
         self._process_todos(repo, issues)
+
+        # Do not complete if repo is not supported
         if not org_repo:
             return
 
         stories_tasks = dict()
         for issue in issues:
-            # Logic after this point is only for home and org repo
-            if not org_repo:
-                continue
-
             if self._is_story(issue) and issue.isOpen:
                 key = NOMILESTONE
                 if issue.milestone:
@@ -482,6 +475,14 @@ class Actions(ActionsBaseMgmt):
 
         self._check_deadline(service, milestones, report)
         self._generate_views(repo, milestones, issues, report)
+
+    def _is_org_repo(self, name):
+        """ Check if repo name starts with our supported initials """
+        SUPPORTED_REPOS = ('org_', 'proj_')
+        for typ in SUPPORTED_REPOS:
+            if name.lower().startswith(typ):
+                return True
+        return False
 
     def _story_deadline(self, issue):
         eta, id = self._story_estimate(issue)
