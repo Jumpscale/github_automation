@@ -410,7 +410,7 @@ class Actions(ActionsBaseMgmt):
 
         issues = sorted(issues, key=lambda i: i.number)
 
-        org_repo = self._is_supported(repo.name)
+        org_repo = self._is_org_repo(repo.name)
 
         _ms = [('{m.number}:{m.title}'.format(m=m), m) for m in repo.milestones]
         milestones = collections.OrderedDict(sorted(_ms, key=lambda i: i[1].title))
@@ -476,7 +476,7 @@ class Actions(ActionsBaseMgmt):
         self._check_deadline(service, milestones, report)
         self._generate_views(repo, milestones, issues, report)
 
-    def _is_supported(self, name):
+    def _is_org_repo(self, name):
         """ Check if repo name starts with our supported initials """
         SUPPORTED_REPOS = ('org_', 'proj_')
         for typ in SUPPORTED_REPOS:
