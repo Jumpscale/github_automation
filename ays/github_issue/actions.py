@@ -107,27 +107,19 @@ class Actions(ActionsBaseMgmt):
                 service.model['open'] = False
                 service.model['state'] = 'closed'
                 repo = service.parent.actions.get_github_repo(service=service.parent)
-                if repo.type != "code":
+                if repo.type != "org":
                     return
                 client_ays =service.parent.getProducers('github_client')[0]
                 client = client_ays.actions.getGithubClient(client_ays)
-                bug = repo.getIssue(service.model['number'])
-                if "type_bug" not in bug.labels:
+                story = repo.getIssue(service.model['number'])
+                if "type_story" not in story.labels:
                     return
-                mail_service = service.getProducers('mailclient')[0]
-                email_sender = mail_service.actions.getSender(mail_service)
-                comments = bug.comments
-                for comment in comments:
-                    issues_nums = re.findall(pattern, comment['body'])
-                    for issue_num in issues_nums:
-                        issue = repo.getIssue(int(issue_num))
-                        if "type_ticket" in issue.labels:
-                            user = client.api.get_user(issue.assignee)
-                            email = user.email
-                            email_sender.send(email,
-                                              mail_service.hrd.getStr("smtp.sender"),
-                                              "Ticket %s" % bug.number,
-                                              "Hi %s, The the Issue %s is closed now" % (issue.assignee, bug.number))
+                issues_nums = re.findall(pattern, story.body)
+                j.logger.log("Story Card closed will closes these related issue with nums %s" % issues_nums)
+                for issue_num in issues_nums:
+                    issue = repo.getIssue(int(issue_num))
+                    issue.api.edit(state="closed")
+
             elif action == 'reopened':
                 model = service.model.copy()
                 model['open'] = True
