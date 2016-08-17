@@ -18,6 +18,7 @@ class Actions(ActionsBaseMgmt):
         github.label.state.planned: ['*']
         github.label.state.question: ['*']
         github.label.state.verification: ['*']
+        github.label.state.ready: ['org']
         github.label.type.bug: [code, ays, cockpit, doc, www]
         github.label.type.feature: [code, ays, cockpit, doc, www]
         github.label.type.monitor: [proj, www, cockpit]
