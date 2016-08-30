@@ -4,7 +4,7 @@ import re
 import collections
 from jinja2 import Template
 from github.GithubObject import NotSet
-
+import threading
 
 NOMILESTONE = '__no_milestone__'
 
@@ -119,7 +119,7 @@ re_story_estimate = re.compile('^ETA:\s*(.+)\s*$', re.MULTILINE)
 class Actions(ActionsBaseMgmt):
     def __init__(self, *args, **kwargs):
         self.logger = j.logger.get("github.repo")
-
+        self.lock = threading.RLock()
     def input(self, service, name, role, instance, args={}):
 
         # if repo.name not filled in then same as instance
@@ -614,30 +614,34 @@ class Actions(ActionsBaseMgmt):
         """
         refresh: bool, force loading of issue from github
         """
-        self.sync_milestones(service=service)
-        self.set_labels(service=service)
+        self.lock.acquire()
+        try:
+            self.sync_milestones(service=service)
+            self.set_labels(service=service)
 
-        if service.state.get('process_issues', die=False) == 'RUNNING':
-            # don't processIssue twice at the same time.
-            j.logger.log('process_issues already running')
-            return
+            if service.state.get('process_issues', die=False) == 'RUNNING':
+                # don't processIssue twice at the same time.
+                j.logger.log('process_issues already running')
+                return
 
-        service.state.set('process_issues', 'RUNNING')
-        service.state.save()
+            service.state.set('process_issues', 'RUNNING')
+            service.state.save()
 
-        repo = self.get_github_repo(service=service)
-        if refresh:
-            # force reload of services from github.
-            repo._issues = None
-        else:
-            # load issues from ays.
-            repo._issues = self.get_issues_from_ays(service=service)
+            repo = self.get_github_repo(service=service)
+            if refresh:
+                # force reload of services from github.
+                repo._issues = None
+            else:
+                # load issues from ays.
+                repo._issues = self.get_issues_from_ays(service=service)
 
-        self._process_issues(service, repo)
+            self._process_issues(service, repo)
 
-        for issue in repo.issues:
-            args = {'github.repo': service.instance}
-            service.aysrepo.new(name='github_issue', instance=str(issue.id), args=args, model=issue.ddict)
+            for issue in repo.issues:
+                args = {'github.repo': service.instance}
+                service.aysrepo.new(name='github_issue', instance=str(issue.id), args=args, model=issue.ddict)
+        finally:
+            self.lock.release()
 
     def stories2pdf(self, service):
         repo = self.get_github_repo(service)
