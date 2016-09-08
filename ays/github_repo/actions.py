@@ -356,6 +356,8 @@ class Actions(ActionsBaseMgmt):
             estimation = self._task_estimate(task.title)
             if estimation:
                 m = re.match(r'(\d+)(\w)',estimation)
+                if not m:
+                    continue
                 estimation_time = m.group(1)
                 estimation_unit = m.group(2)
                 if estimation_unit == 'd':
