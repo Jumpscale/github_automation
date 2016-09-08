@@ -308,27 +308,67 @@ class Actions(ActionsBaseMgmt):
                 return ' '
 
         doc = j.data.markdown.getDocument(story.body)
-        # remove all list items that start with - [
+        # remove all list items that start with
+        # also remove the progress bar
         for item in reversed(doc.items):
-            if item.type != 'list':
-                break
-            if item.text.startswith('- ['):
-                doc.items.pop()
+            if item.type == "block":
+                if item.text.startswith("![Progress]"):
+                    doc.items.pop()
+
+            elif item.type == 'header':
+                if item.title.startswith("Remaining Time:"):
+                    doc.items.pop()
+                # if item.type != 'list':
+                #     break
+            elif item.type == "list":
+                if item.text.startswith('- ['):
+                    doc.items.pop()
+
+
 
         for task in tasks:
-            line = '- [%s] %s #%s' % (state(task.state), task.title, task.number)
+            line = '- [%s] %s #%s' % (state(task.api.state), task.title, task.number)
             doc.addMDListItem(0, line)
 
         # drop the table for backward compatibility
         for item in doc.items:
             if item.type == 'table':
-                doc.items.remove(item)
                 break
 
+                doc.items.remove(item)
+        progress, remaining_time = self.calculate_story_progress(story, tasks)
+        doc.addMDBlock("# Remaining Time: %sh" % remaining_time)
+        doc.addMDBlock("![Progress](http://progressed.io/bar/%s)" % progress)
         body = str(doc)
 
         if body != story.body:
             story.api.edit(body=body)
+
+
+
+    def calculate_story_progress(self, story, tasks):
+        total_estimation = 0
+        remaining_time = 0
+        progress = 0
+        done = 0
+
+        for task in tasks:
+            estimation = self._task_estimate(task.title)
+            if estimation:
+                m = re.match(r'(\d+)(\w)',estimation)
+                estimation_time = m.group(1)
+                estimation_unit = m.group(2)
+                if estimation_unit == 'd':
+                    estimation_time = float(estimation_time) * 24
+                total_estimation += int(estimation_time)
+                if task.api.state == 'closed':
+                    done += int(estimation_time)
+
+                else:
+                    remaining_time += int(estimation_time)
+        if total_estimation:
+            progress = (done*100) / total_estimation
+        return (int(progress), remaining_time)
 
     def _task_link_to_story(self, story, task):
         """
