@@ -4,7 +4,7 @@ from JumpScale import j
 
 class Actions(ActionsBaseMgmt):
 
-    
+
     def init(self,service):
 
         config="""
@@ -29,6 +29,8 @@ class Actions(ActionsBaseMgmt):
         github.label.task.no_estimation: [home,milestone,proj,org]
         github.label.type.ticket: [proj,org]
         github.label.type.lead: [proj,org]
+        github.label.customer.centrilogic: ['*']
+        github.label.customer.LCI.Mauritius: ['*']
         github.project.types: [home, proj, cockpit, doc, ays, code, www, milestone,org]
         """
 
