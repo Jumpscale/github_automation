@@ -10,8 +10,7 @@ class Actions(ActionsBaseMgmt):
         config="""
         github.label.priority.critical: ['*']
         github.label.priority.minor: ['*']
-        github.label.priority.normal: ['*']
-        github.label.priority.urgent: ['*']
+        github.label.priority.major: ['*']
         github.label.process.duplicate: ['*']
         github.label.process.wontfix: ['*']
         github.label.state.inprogress: ['*']
@@ -22,16 +21,16 @@ class Actions(ActionsBaseMgmt):
         github.label.type.bug: [code, ays, cockpit, doc, www]
         github.label.type.feature: [code, ays, cockpit, doc, www]
         github.label.type.monitor: [proj, www, cockpit]
-        github.label.type.assistance_request: [proj]
-        github.label.type.question: [home, code, proj, ays, doc, cockpit, www,milestone,org]
-        github.label.type.story: [home, proj, milestone,org]
+        github.label.type.assistance_request: [proj, env]
+        github.label.type.question: [home, code, proj, ays, doc, cockpit, www,milestone,org, env]
+        github.label.type.story: [home, proj, milestone,org, env]
         github.label.type.task: [home,milestone,proj,org]
-        github.label.task.no_estimation: [home,milestone,proj,org]
-        github.label.type.ticket: [proj,org]
-        github.label.type.lead: [proj,org]
+        github.label.task.no_estimation: [home,milestone,proj,org, env]
+        github.label.type.ticket: [proj,org, code, env]
+        github.label.type.lead: [proj,org, env]
         github.label.customer.centrilogic: ['*']
         github.label.customer.LCI.Mauritius: ['*']
-        github.project.types: [home, proj, cockpit, doc, ays, code, www, milestone,org]
+        github.project.types: [home, proj, cockpit, doc, ays, code, www, milestone,org, env]
         """
 
 
