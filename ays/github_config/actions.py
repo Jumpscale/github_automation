@@ -30,6 +30,8 @@ class Actions(ActionsBaseMgmt):
         github.label.type.lead: [proj,org, env]
         github.label.customer.centrilogic: ['*']
         github.label.customer.LCI.Mauritius: ['*']
+        github.label.type.documentation: ['*']
+        github.label.state.documentation: ['*']
         github.project.types: [home, proj, cockpit, doc, ays, code, www, milestone,org, env]
         """
 
