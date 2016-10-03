@@ -361,7 +361,7 @@ class Actions(ActionsBaseMgmt):
                 estimation_time = m.group(1)
                 estimation_unit = m.group(2)
                 if estimation_unit == 'd':
-                    estimation_time = float(estimation_time) * 24
+                    estimation_time = float(estimation_time) * 8
                 total_estimation += int(estimation_time)
                 if task.api.state == 'closed':
                     done += int(estimation_time)
