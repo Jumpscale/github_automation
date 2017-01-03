@@ -1,8 +1,4 @@
 user.id = type:'str' descr:'' @ASK
-
 user.name = type:'str' descr:'' @ASK
-
 user.login = type:'str' descr:'' @ASK
-
 github.client = type:'str' parent:'github_client'
-
