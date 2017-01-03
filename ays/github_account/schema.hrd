@@ -1,6 +1,3 @@
-
 github.url = type:'str' descr:'url of github account e.g. https://github.com/Jumpscale' @ASK
-
 github.client = type:'str' consume:'github_client:1'
-
 telegram.handle = type:'str' descr:'Telegram handle for repos related notifications'
