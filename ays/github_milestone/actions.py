@@ -1,9 +1,9 @@
 from JumpScale import j
 
 
-class Actions(ActionsBaseMgmt):
-    def input(self,service,recipe,role,instance,args={}):
-        if "milestone.title" not in args:
-            args['milestone.title']=instance
+def input(job):
+    args = job.model.args
+    service = job.service
 
-        return args
+    if 'milestone.title' not in args:
+        args['milestrone.title'] = service.name
