@@ -16,3 +16,5 @@ github.config= type:'str' consume:'github_config:1' auto
 repo.emails = type:'str' list
 
 org.repo = type:'str' consume:github_repo
+pickledmodel = type:'str'
+milestones = type:str list consume:github_milestone

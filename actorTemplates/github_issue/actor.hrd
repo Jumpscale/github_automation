@@ -1,0 +1,5 @@
+#events.generic =
+#    'update_from_github',
+#recurring.update_from_github
+#period: 5m,
+#log: True

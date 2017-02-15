@@ -1,4 +1,0 @@
-recurring.recurring_process_issues_from_model = '1h'
-recurring.recurring_process_issues_from_github = '3h'
-events.generic =
-    event_new_issue,

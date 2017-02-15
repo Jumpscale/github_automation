@@ -18,8 +18,8 @@ def init(job):
     github.label.type.assistance_request: [proj, env]
     github.label.type.question: [home, code, proj, ays, doc, cockpit, www,milestone,org, env]
     github.label.type.story: [home, proj, milestone,org, env]
-    github.label.type.task: [home,milestone,proj,org]
-    github.label.task.no_estimation: [home,milestone,proj,org, env]
+    github.label.type.task: [home,milestone,proj,org, code]
+    github.label.task.no_estimation: [home,milestone,proj,org, env, code]
     github.label.type.ticket: [proj,org, code, env]
     github.label.type.lead: [proj,org, env]
     github.label.customer.centrilogic: ['*']
@@ -30,7 +30,6 @@ def init(job):
     """
 
     config = j.data.text.strip(config)
-
     labels = j.data.serializer.yaml.loads(config) # LOAD THE LABELS WHEN NEEDED.
     service.model.data.hrd = config
     service.saveAll()

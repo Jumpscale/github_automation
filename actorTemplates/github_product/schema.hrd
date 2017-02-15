@@ -1,0 +1,2 @@
+repos = type:str list consume:github_repo
+milestones = type:str list consume:github_milestone

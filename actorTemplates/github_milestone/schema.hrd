@@ -1,0 +1,4 @@
+milestone.title = type:'str' descr:'title of the milestone' @ASK
+milestone.description = type:'str' descr:'description of the milestone'
+milestone.deadline = type:'str' descr:'' @ASK
+pickledmodel = type:'str'

@@ -1,0 +1,2 @@
+orgrepo = type:str consume:github_repo
+coderepo = type:str consume:github_repo

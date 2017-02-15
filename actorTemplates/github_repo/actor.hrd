@@ -1,0 +1,7 @@
+#recurring.recurring_process_issues_from_model =
+
+recurring.process_issues_from_github =
+  period: 1h,
+  log: True
+#events.generic =
+#    event_new_issue,

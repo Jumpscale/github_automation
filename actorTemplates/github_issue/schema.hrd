@@ -4,3 +4,4 @@
 
 github.repo = parent:'github_repo' @ASK
 mail.client = type:'str' consume:'mailclient:0' auto
+pickledmodel = type:'str'
